@@ -2,7 +2,7 @@
 
 *Last update: 16 December 2020*
 
-[Isolation Forest (IF)](https://en.wikipedia.org/wiki/Isolation_forest) can be used to detect outliers in a dataset. IF is a model that is trained on some data and can be predicted on new data. Thus, IF makes it possible to identify outliers in new data in a similar way as in an original training dataset. This can be helpful when outliers in new data need to be identified in order to ensure the accuracy of a predictive model.
+[Isolation Forest](https://en.wikipedia.org/wiki/Isolation_forest) can be used to detect outliers in a dataset. Isolation Forest is a model class that is trained on some data and can be predicted on new data. Thus, Isolation Forest makes it possible to identify outliers in new data in the same way as in an original training dataset. This can be helpful when outliers in new data need to be identified in order to ensure the accuracy of a predictive model.
 
 **1. Basic Example (sklearn)**
 
