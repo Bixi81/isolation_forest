@@ -179,7 +179,7 @@ The acuracy of the classifier with outliers in the data is 0.9 and worse than be
 
 Outliers are present in both, the train and test set. In the train set, about 10% of observations are outliers. The most important tuning paraneter in [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html) is `contamination=`. This parameter provides information on the share of outliers in the data. Often the exact share is unknown, so that evaluation on the test set is needed. However, in the present case, I choose `contamination=0.1` since 10% of the data are outliers.
 
-Next I first train the Isolation Forest, identify and remove outliers in `train` and `test` and fit the classifier again on the data without the outliers.
+Next I train the Isolation Forest, identify and remove outliers in `train` and `test`, and fit the classifier again on the data without the outliers.
 
 ```
 # Train isolation forest
