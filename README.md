@@ -175,10 +175,71 @@ The last 20 rows of the data frame illustrate hor the outlier look like. They ar
 164  148.0  342.0  188.0  686.0  2
 ```
 
-The acuracy of the claffifier with outliers in the data is 0.9 and worse than before. So it is beneficial to identify the outliers and remove them or treat them in some other way if possible.
+The acuracy of the classifier with outliers in the data is 0.9 and worse than before. So it is beneficial to identify the outliers and remove them or treat them in some other way if possible.
 
-Outliers are present in both, the train and test set. In the train set, about 10% of observations are outliers. The most important tuning paraneter in [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html) is `contamination`. This parameter
+Outliers are present in both, the train and test set. In the train set, about 10% of observations are outliers. The most important tuning paraneter in [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html) is `contamination=`. This parameter provides information on the share of outliers in the data. Often the exact share is unknown, so that evaluation on the test set is needed. However, in the present case, I choose `contamination=0.1` since 10% of the data are outliers.
+
+Next I first train the Isolation Forest, identify and remove outliers in `train` and `test` and fit the classifier again on the data without the outliers.
 
 ```
-code
+# Train isolation forest
+isof = IsolationForest(random_state=123, contamination=0.1, bootstrap=True, behaviour="new")
+isof.fit(xtrain)
+
+# Remove outlier from train data
+isopred = isof.predict(xtrain)
+print(isopred)
+df = pd.DataFrame(xtrain)
+df['y'] = pd.Series(ytrain)
+df['iso'] = pd.Series(isopred) 
+print(df[df[1]>=100])
+print(df.shape)
+df = df[df['iso'] == 1]
+print(df[df[1]>=100])
+print(df.shape)
+
+# Return train data without extreme values
+y = df['y']
+df = df.drop(['y'], axis=1)
+df = df.drop(['iso'], axis=1)
+print(df.shape)
+xtrain_clean = df.to_numpy()
+ytrain_clean = y.to_numpy()
+
+# Remove outlier from test data
+isopred = isof.predict(xtest)
+df = pd.DataFrame(xtest)
+df['y'] = pd.Series(ytest)
+df['iso'] = pd.Series(isopred) 
+print(df[df[1]>=100])
+print(df.shape)
+df = df[df['iso'] == 1]
+print(df[df[1]>=100])
+print(df.shape)
+
+# Return test data without extreme values
+y = df['y']
+df = df.drop(['y'], axis=1)
+df = df.drop(['iso'], axis=1)
+print(df.shape)
+xtest = df.to_numpy()
+ytest = y.to_numpy()
+
+# Run classifier again (on data without outliers)
+et = ExtraTreesClassifier(n_estimators=1000, max_features=2, n_jobs=5, random_state=123)
+et.fit(xtrain, ytrain)
+ypred = et.predict(xtest)
+
+scores = accuracy_score(ytest, ypred)
+print(scores)
+cm = confusion_matrix(ytest, ypred)
+print(cm)
 ```
+
+A closer look at the data shows, that `ExtraTreesClassifier()` has identified 12 observations as outliers in `train` (while 10 are true outliers) and 6 observations in `test` (while 5 are true outliers). So the choice of `contamination=0.1` in `ExtraTreesClassifier()` is a little generous. However, after removing the outliers identified by `ExtraTreesClassifier()`, the accuracy of the classifier improves to just under 0.98 on the test set (compared to 0.9 with outliers and 0.96 in the benchmark model).
+
+**3. Conclusion**
+
+Removing "extreme values" in data can help to achieve a better predictive performance. However, in case a "new" unknown and unseen set of data is used to make predictions (which usually is the case, e.g. when using a test set), it is often unclear what observations can be seen as outliers and can be removed without the risk of misleading results. 
+
+Isolation Forest provides an option to identify and predict outliers. Thus Isolation Forest can be used to treat outliers in new data (by prediction) which in turn can improve overall predictive performance (at least with respect to the observations not predicted as outliers).
